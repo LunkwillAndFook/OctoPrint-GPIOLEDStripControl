@@ -29,7 +29,7 @@ class LED:
 	pwm = None
 	pin = None
 	def __init__(self, pin):
-    if i != 0:
+    if pin != 0:
       GPIO.setup(pin, GPIO.OUT)
 		  self.pwm = GPIO.PWM(pin, 100)
 		  self.pin = pin
