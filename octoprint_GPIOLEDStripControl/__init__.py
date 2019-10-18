@@ -32,6 +32,7 @@ class LED:
         GPIO.setmode(GPIO.BCM)
         GPIO.setup(pin, GPIO.OUT)
         self.pwm = GPIO.PWM(pin, 100)
+        self.pwm.start(0)
         self.pin = pin
 
     def ChangeDutyCycle(self, duty_cycle):
@@ -39,6 +40,7 @@ class LED:
 
     def stop(self):
         self.ChangeDutyCycle(0)
+        self.pwm.stop()
 
 
 class GPIOLEDStripControlPlugin(octoprint.plugin.AssetPlugin,
