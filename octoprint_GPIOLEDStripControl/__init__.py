@@ -23,7 +23,7 @@ import re
 import octoprint.plugin
 import RPi.GPIO as GPIO
 
-GPIO.setMode(GPIO.BCM)
+GPIO.setmode(GPIO.BCM)
 
 class LED:
 	pwm = None
