@@ -1,0 +1,38 @@
+<h4>GPIO Configuration</h4>
+<p>Must be addressed using BCM numbers (for now)</p>
+
+<form class="form-horizontal">
+    <div class="control-group">
+        <label class="control-label">Red Pin Number</label>
+        <div class="controls">
+            <input type="number" step="any" min="0" max="15" class="input-mini text-right" data-bind="value: settings.plugins.GPIOLEDStripControl.r">
+        </div>
+    </div>
+
+    <div class="control-group">
+        <label class="control-label">Green Pin Number</label>
+        <div class="controls">
+            <input type="number" step="any" min="0" max="15" class="input-mini text-right" data-bind="value: settings.plugins.GPIOLEDStripControl.g">
+        </div>
+    </div>
+
+    <div class="control-group">
+        <label class="control-label">Blue Pin Number</label>
+        <div class="controls">
+            <input type="number" step="any" min="0" max="15" class="input-mini text-right" data-bind="value: settings.plugins.GPIOLEDStripControl.b">
+        </div>
+    </div>
+
+    <div class="control-group">
+        <label class="control-label">White Pin Number (Optional)</label>
+        <div class="controls">
+            <input type="number" step="any" min="0" max="15" class="input-mini text-right" data-bind="value: settings.plugins.GPIOLEDStripControl.w">
+        </div>
+    </div>
+
+    <div class="control-group">
+        <label class="checkbox">
+            <input type="checkbox" data-bind="checked: settings.plugins.GPIOLEDStripControl.on_startup">Turn on LEDs on OctoPrint startup
+        </label>
+    </div>
+</form>

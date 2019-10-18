@@ -21,26 +21,25 @@ import time
 import re
 
 import octoprint.plugin
-import Adafruit_PCA9685
+import RPi.GPIO as GPIO
 
-pwm = Adafruit_PCA9685.PCA9685()
-pwm.set_pwm_freq(120)
+GPIO.setMode(GPIO.BCM)
 
 class PCA9685LED:
 	pwm = None
 	pin = None
 	def __init__(self, pwm, pin):
-		self.pwm = pwm
+		self.pwm = GPIO.PWM(26, 100)
 		self.pin = pin
 
 	def ChangeDutyCycle(self, duty_cycle):
-		self.pwm.set_pwm(self.pin, 0, int(duty_cycle))
+		self.pwm.ChangeDutyCycle(int(duty_cycle))
 
 	def stop(self):
 		self.ChangeDutyCycle(0)
 
 
-class PCA9685LEDStripControlPlugin(octoprint.plugin.AssetPlugin,
+class GPIOLEDStripControlPlugin(octoprint.plugin.AssetPlugin,
 							octoprint.plugin.SettingsPlugin,
 							octoprint.plugin.ShutdownPlugin,
 							octoprint.plugin.StartupPlugin,
@@ -104,19 +103,19 @@ class PCA9685LEDStripControlPlugin(octoprint.plugin.AssetPlugin,
 
 	def get_template_configs(self):
 		return [
-			dict(type="settings", name="PCA9685 LED Strip Control", custom_bindings=False)
+			dict(type="settings", name="GPIO LED Strip Control", custom_bindings=False)
 		]
 
 	def get_settings_defaults(self):
 		return dict(r=0, g=0, b=0, w=0, on_startup=True)
 
 	def on_settings_initialized(self):
-		self._logger.debug(u"PCA9685LEDStripControl on_settings_load()")
+		self._logger.debug(u"GPIOLEDStripControl on_settings_load()")
 
 		self._register_leds()
 
 	def on_settings_save(self, data):
-		self._logger.debug(u"PCA9685LEDStripControl on_settings_save()")
+		self._logger.debug(u"GPIOLEDStripControl on_settings_save()")
 		self._unregister_leds()
 		# cast to proper types before saving
 		for k in ('r', 'g', 'b', 'w'):
@@ -125,7 +124,7 @@ class PCA9685LEDStripControlPlugin(octoprint.plugin.AssetPlugin,
 		self._register_leds()
 
 	def on_settings_migrate(self, target, current=None):
-		self._logger.debug(u"PCA9685LEDStripControl on_settings_migrate()")
+		self._logger.debug(u"GPIOLEDStripControl on_settings_migrate()")
 		if current == 1:
 			# add the 2 new values included
 			self._settings.set(['w'], self.get_settings_defaults()["w"])
@@ -136,25 +135,25 @@ class PCA9685LEDStripControlPlugin(octoprint.plugin.AssetPlugin,
 	def get_update_information(self):
 		return dict(
 			PCA9685LEDStripControl=dict(
-				displayName="PCA9685 LED Strip Control Plugin",
+				displayName="GPIO LED Strip Control Plugin",
 				displayVersion=self._plugin_version,
 
 				# version check: github repository
 				type="github_release",
-				user="ozgunawesome",
-				repo="OctoPrint-PCA9685LEDStripControl",
+				user="LunkwillAndFook",
+				repo="OctoPrint-GPIOLEDStripControl",
 				current=self._plugin_version,
 
 				# update method: pip
-				pip="https://github.com/ozgunawesome/OctoPrint-PCA9685LEDStripControl/archive/{target_version}.zip"
+				pip="https://github.com/LunkwillAndFook/OctoPrint-GPIOLEDStripControl/archive/{target_version}.zip"
 			)
 		)
 
-__plugin_name__ = "PCA9685 LED Strip Control"
+__plugin_name__ = "GPIO LED Strip Control"
 
 def __plugin_load__():
 	global __plugin_implementation__
-	__plugin_implementation__ = PCA9685LEDStripControlPlugin()
+	__plugin_implementation__ = GPIOLEDStripControlPlugin()
 
 	global __plugin_hooks__
 	__plugin_hooks__ = {
