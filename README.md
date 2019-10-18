@@ -1,6 +1,6 @@
 # OctoPrint-GPIOLEDStripControl
 
-OctoPrint plugin that intercepts M150 GCode commands and controls LEDs connected to a custom driver board.
+OctoPrint plugin that intercepts M150 GCode commands and controls LEDs connected to a custom controller board.
 
 Implements the M150 command syntax from the latest Marlin.
 
