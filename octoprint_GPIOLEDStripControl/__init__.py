@@ -29,9 +29,10 @@ class LED:
 	pwm = None
 	pin = None
 	def __init__(self, pin):
-    GPIO.setup(pin, GPIO.OUT)
-		self.pwm = GPIO.PWM(pin, 100)
-		self.pin = pin
+    if i != 0:
+      GPIO.setup(pin, GPIO.OUT)
+		  self.pwm = GPIO.PWM(pin, 100)
+		  self.pin = pin
 
 	def ChangeDutyCycle(self, duty_cycle):
 		self.pwm.ChangeDutyCycle(int(duty_cycle))
