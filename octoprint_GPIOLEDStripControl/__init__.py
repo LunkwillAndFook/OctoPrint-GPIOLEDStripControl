@@ -25,7 +25,7 @@ import RPi.GPIO as GPIO
 
 GPIO.setMode(GPIO.BCM)
 
-class PCA9685LED:
+class LED:
 	pwm = None
 	pin = None
 	def __init__(self, pwm, pin):
@@ -61,13 +61,13 @@ class GPIOLEDStripControlPlugin(octoprint.plugin.AssetPlugin,
 		for i in ('r', 'g', 'b', 'w'):
 			pin = self._settings.get_int([i])
 			self._logger.debug(u"got pin(%s)" % (pin,))
-			self._leds[i] = PCA9685LED(pwm, pin)
+			self._leds[i] = LED(pwm, pin)
 
 	def on_after_startup(self):
-		self._logger.debug(u"PCA9685LEDStripControl Startup")
+		self._logger.debug(u"GPIOLEDStripControl Startup")
 
 	def on_shutdown(self):
-		self._logger.debug(u"PCA9685LEDStripControl Shutdown")
+		self._logger.debug(u"GPIOLEDStripControl Shutdown")
 		self._unregister_leds()
 
 	def HandleM150(self, comm_instance, phase, cmd, cmd_type, gcode, *args, **kwargs):
@@ -134,7 +134,7 @@ class GPIOLEDStripControlPlugin(octoprint.plugin.AssetPlugin,
 
 	def get_update_information(self):
 		return dict(
-			PCA9685LEDStripControl=dict(
+			GPIOLEDStripControl=dict(
 				displayName="GPIO LED Strip Control Plugin",
 				displayVersion=self._plugin_version,
 
