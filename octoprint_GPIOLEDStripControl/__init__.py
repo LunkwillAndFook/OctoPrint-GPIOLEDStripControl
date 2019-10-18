@@ -29,10 +29,9 @@ class LED:
 	pwm = None
 	pin = None
 	def __init__(self, pin):
-    if pin != 0:
-      GPIO.setup(pin, GPIO.OUT)
-		  self.pwm = GPIO.PWM(pin, 100)
-		  self.pin = pin
+    GPIO.setup(pin, GPIO.OUT)
+    self.pwm = GPIO.PWM(pin, 100)
+    self.pin = pin
 
 	def ChangeDutyCycle(self, duty_cycle):
 		self.pwm.ChangeDutyCycle(int(duty_cycle))
@@ -64,7 +63,7 @@ class GPIOLEDStripControlPlugin(octoprint.plugin.AssetPlugin,
 		for i in ('r', 'g', 'b', 'w'):
 			pin = self._settings.get_int([i])
 			self._logger.debug(u"got pin(%s)" % (pin,))
-			self._leds[i] = LED(pin)
+      if pin != 0: self._leds[i] = LED(pin)
 
 	def on_after_startup(self):
 		self._logger.debug(u"GPIOLEDStripControl Startup")
