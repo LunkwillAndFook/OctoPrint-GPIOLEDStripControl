@@ -28,7 +28,7 @@ Configure the GPIO pins via the OctoPrint settings UI.
 
 ## Credit
 
-Much of the code I have modified to make this work was shamelessly lifted from https://github.com/ozgunawesome/OctoPrint-PCA9685LEDStripControl.
+The code I have modified to make this work was shamelessly forked from https://github.com/ozgunawesome/OctoPrint-PCA9685LEDStripControl.
 
 ## Disclaimer
 
