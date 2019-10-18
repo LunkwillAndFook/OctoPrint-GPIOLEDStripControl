@@ -93,8 +93,8 @@ class GPIOLEDStripControlPlugin(octoprint.plugin.AssetPlugin,
                 except ValueError:
                     # more than likely match.group(2) was unspecified
                     v = 255.0
-                v = v/255.0 * 4095.0  # convert RGB to RPi dutycycle
-                v = max(min(v, 4095.0), 0.0)  # clamp the value
+                v = v/255.0 * 100.0  # convert RGB to RPi dutycycle
+                v = max(min(v, 100.0), 0.0)  # clamp the value
                 dutycycles[k] = v
                 self._logger.debug(u"match 1: %s 2: %s" % (k, v))
 
