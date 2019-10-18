@@ -29,6 +29,7 @@ class LED:
 	pwm = None
 	pin = None
 	def __init__(self, pin):
+    GPIO.setup(pin, GPIO.OUT)
 		self.pwm = GPIO.PWM(pin, 100)
 		self.pin = pin
 
@@ -55,6 +56,7 @@ class GPIOLEDStripControlPlugin(octoprint.plugin.AssetPlugin,
 				self._leds[i].ChangeDutyCycle(0)
 				self._leds[i].stop()
 		self._leds = dict(r=None, g=None, b=None)
+    GPIO.cleanup()
 
 	def _register_leds(self):
 		self._logger.debug(u"_register_leds()")
