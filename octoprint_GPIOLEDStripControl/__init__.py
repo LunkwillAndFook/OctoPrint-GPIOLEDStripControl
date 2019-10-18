@@ -25,141 +25,151 @@ import RPi.GPIO as GPIO
 
 GPIO.setmode(GPIO.BCM)
 
+
 class LED:
-	pwm = None
-	pin = None
-	def __init__(self, pin):
-    GPIO.setup(pin, GPIO.OUT)
-    self.pwm = GPIO.PWM(pin, 100)
-    self.pin = pin
+    pwm = None
+    pin = None
 
-	def ChangeDutyCycle(self, duty_cycle):
-		self.pwm.ChangeDutyCycle(int(duty_cycle))
+    def __init__(self, pin):
+        GPIO.setup(pin, GPIO.OUT)
+        self.pwm = GPIO.PWM(pin, 100)
+        self.pin = pin
 
-	def stop(self):
-		self.ChangeDutyCycle(0)
+    def ChangeDutyCycle(self, duty_cycle):
+        self.pwm.ChangeDutyCycle(int(duty_cycle))
+
+    def stop(self):
+        self.ChangeDutyCycle(0)
 
 
 class GPIOLEDStripControlPlugin(octoprint.plugin.AssetPlugin,
-							octoprint.plugin.SettingsPlugin,
-							octoprint.plugin.ShutdownPlugin,
-							octoprint.plugin.StartupPlugin,
-							octoprint.plugin.TemplatePlugin):
+                                octoprint.plugin.SettingsPlugin,
+                                octoprint.plugin.ShutdownPlugin,
+                                octoprint.plugin.StartupPlugin,
+                                octoprint.plugin.TemplatePlugin):
 
-	def __init__(self):
-		self._leds = dict(r=None, g=None, b=None, w=None)
+    def __init__(self):
+        self._leds = dict(r=None, g=None, b=None, w=None)
 
-	def _unregister_leds(self):
-		self._logger.debug(u"_unregister_leds()")
-		for i in ('r', 'g', 'b', 'w'):
-			if self._leds[i]:
-				self._leds[i].ChangeDutyCycle(0)
-				self._leds[i].stop()
-		self._leds = dict(r=None, g=None, b=None)
-    GPIO.cleanup()
+    def _unregister_leds(self):
+        self._logger.debug(u"_unregister_leds()")
+        for i in ('r', 'g', 'b', 'w'):
+            if self._leds[i]:
+                self._leds[i].ChangeDutyCycle(0)
+                self._leds[i].stop()
+        self._leds = dict(r=None, g=None, b=None)
+        GPIO.cleanup()
 
-	def _register_leds(self):
-		self._logger.debug(u"_register_leds()")
-		for i in ('r', 'g', 'b', 'w'):
-			pin = self._settings.get_int([i])
-			self._logger.debug(u"got pin(%s)" % (pin,))
-      if pin != 0: self._leds[i] = LED(pin)
+    def _register_leds(self):
+        self._logger.debug(u"_register_leds()")
+        for i in ('r', 'g', 'b', 'w'):
+            pin = self._settings.get_int([i])
+            self._logger.debug(u"got pin(%s)" % (pin,))
+            if pin != 0:
+                self._leds[i] = LED(pin)
+            else:
+                self._leds[i] = None
 
-	def on_after_startup(self):
-		self._logger.debug(u"GPIOLEDStripControl Startup")
+    def on_after_startup(self):
+        self._logger.debug(u"GPIOLEDStripControl Startup")
 
-	def on_shutdown(self):
-		self._logger.debug(u"GPIOLEDStripControl Shutdown")
-		self._unregister_leds()
+    def on_shutdown(self):
+        self._logger.debug(u"GPIOLEDStripControl Shutdown")
+        self._unregister_leds()
 
-	def HandleM150(self, comm_instance, phase, cmd, cmd_type, gcode, *args, **kwargs):
-		if gcode and cmd.startswith("M150"):
-			self._logger.debug(u"M150 Detected: %s" % (cmd,))
-			# Emulating Marlin 1.1.0's syntax
-			# https://github.com/MarlinFirmware/Marlin/blob/RC/Marlin/Marlin_main.cpp#L6133
-			dutycycles = {'r':0.0, 'g':0.0, 'b':0.0, 'w':0.0}
-			for match in re.finditer(r'([RGUBWrgubw]) *(\d*)', cmd):
-				k = match.group(1).lower()
-				# Marlin uses RUB instead of RGB
-				if k == 'u': k = 'g'
-				try:
-					v = float(match.group(2))
-				except ValueError:
-					# more than likely match.group(2) was unspecified
-					v = 255.0
-				v = v/255.0 * 4095.0 # convert RGB to RPi dutycycle
-				v = max(min(v, 4095.0), 0.0) # clamp the value
-				dutycycles[k] = v
-				self._logger.debug(u"match 1: %s 2: %s" % (k, v))
+    def HandleM150(self, comm_instance, phase, cmd, cmd_type, gcode, *args, **kwargs):
+        if gcode and cmd.startswith("M150"):
+            self._logger.debug(u"M150 Detected: %s" % (cmd,))
+            # Emulating Marlin 1.1.0's syntax
+            # https://github.com/MarlinFirmware/Marlin/blob/RC/Marlin/Marlin_main.cpp#L6133
+            dutycycles = {'r': 0.0, 'g': 0.0, 'b': 0.0, 'w': 0.0}
+            for match in re.finditer(r'([RGUBWrgubw]) *(\d*)', cmd):
+                k = match.group(1).lower()
+                # Marlin uses RUB instead of RGB
+                if k == 'u':
+                    k = 'g'
+                try:
+                    v = float(match.group(2))
+                except ValueError:
+                    # more than likely match.group(2) was unspecified
+                    v = 255.0
+                v = v/255.0 * 4095.0  # convert RGB to RPi dutycycle
+                v = max(min(v, 4095.0), 0.0)  # clamp the value
+                dutycycles[k] = v
+                self._logger.debug(u"match 1: %s 2: %s" % (k, v))
 
-			for l in dutycycles.keys():
-				if self._leds[l]:
-					self._leds[l].ChangeDutyCycle(dutycycles[l])
+            for l in dutycycles.keys():
+                if self._leds[l]:
+                    self._leds[l].ChangeDutyCycle(dutycycles[l])
 
-			return None,
+            return None,
 
-	##~~ SettingsPlugin mixin
+    # ~~ SettingsPlugin mixin
 
-	def get_settings_version(self):
-		return 2
+    def get_settings_version(self):
+        return 2
 
-	def get_template_configs(self):
-		return [
-			dict(type="settings", name="GPIO LED Strip Control", custom_bindings=False)
-		]
+    def get_template_configs(self):
+        return [
+            dict(type="settings", name="GPIO LED Strip Control",
+                 custom_bindings=False)
+        ]
 
-	def get_settings_defaults(self):
-		return dict(r=0, g=0, b=0, w=0, on_startup=True)
+    def get_settings_defaults(self):
+        return dict(r=0, g=0, b=0, w=0, on_startup=True)
 
-	def on_settings_initialized(self):
-		self._logger.debug(u"GPIOLEDStripControl on_settings_load()")
+    def on_settings_initialized(self):
+        self._logger.debug(u"GPIOLEDStripControl on_settings_load()")
 
-		self._register_leds()
+        self._register_leds()
 
-	def on_settings_save(self, data):
-		self._logger.debug(u"GPIOLEDStripControl on_settings_save()")
-		self._unregister_leds()
-		# cast to proper types before saving
-		for k in ('r', 'g', 'b', 'w'):
-			if data.get(k): data[k] = max(0, int(data[k]))
-		octoprint.plugin.SettingsPlugin.on_settings_save(self, data)
-		self._register_leds()
+    def on_settings_save(self, data):
+        self._logger.debug(u"GPIOLEDStripControl on_settings_save()")
+        self._unregister_leds()
+        # cast to proper types before saving
+        for k in ('r', 'g', 'b', 'w'):
+            if data.get(k):
+                data[k] = max(0, int(data[k]))
+        octoprint.plugin.SettingsPlugin.on_settings_save(self, data)
+        self._register_leds()
 
-	def on_settings_migrate(self, target, current=None):
-		self._logger.debug(u"GPIOLEDStripControl on_settings_migrate()")
-		if current == 1:
-			# add the 2 new values included
-			self._settings.set(['w'], self.get_settings_defaults()["w"])
-			self._settings.set(['on_startup'], self.get_settings_defaults()["on_startup"])
+    def on_settings_migrate(self, target, current=None):
+        self._logger.debug(u"GPIOLEDStripControl on_settings_migrate()")
+        if current == 1:
+            # add the 2 new values included
+            self._settings.set(['w'], self.get_settings_defaults()["w"])
+            self._settings.set(
+                ['on_startup'], self.get_settings_defaults()["on_startup"])
 
-	##~~ Softwareupdate hook
+    # ~~ Softwareupdate hook
 
-	def get_update_information(self):
-		return dict(
-			GPIOLEDStripControl=dict(
-				displayName="GPIO LED Strip Control Plugin",
-				displayVersion=self._plugin_version,
+    def get_update_information(self):
+        return dict(
+            GPIOLEDStripControl=dict(
+                displayName="GPIO LED Strip Control Plugin",
+                displayVersion=self._plugin_version,
 
-				# version check: github repository
-				type="github_release",
-				user="LunkwillAndFook",
-				repo="OctoPrint-GPIOLEDStripControl",
-				current=self._plugin_version,
+                # version check: github repository
+                type="github_release",
+                user="LunkwillAndFook",
+                repo="OctoPrint-GPIOLEDStripControl",
+                current=self._plugin_version,
 
-				# update method: pip
-				pip="https://github.com/LunkwillAndFook/OctoPrint-GPIOLEDStripControl/archive/{target_version}.zip"
-			)
-		)
+                # update method: pip
+                pip="https://github.com/LunkwillAndFook/OctoPrint-GPIOLEDStripControl/archive/{target_version}.zip"
+            )
+        )
+
 
 __plugin_name__ = "GPIO LED Strip Control"
 
+
 def __plugin_load__():
-	global __plugin_implementation__
-	__plugin_implementation__ = GPIOLEDStripControlPlugin()
+    global __plugin_implementation__
+    __plugin_implementation__ = GPIOLEDStripControlPlugin()
 
-	global __plugin_hooks__
-	__plugin_hooks__ = {
-		"octoprint.plugin.softwareupdate.check_config": __plugin_implementation__.get_update_information,
-		"octoprint.comm.protocol.gcode.queuing": __plugin_implementation__.HandleM150
-	}
-
+    global __plugin_hooks__
+    __plugin_hooks__ = {
+        "octoprint.plugin.softwareupdate.check_config": __plugin_implementation__.get_update_information,
+        "octoprint.comm.protocol.gcode.queuing": __plugin_implementation__.HandleM150
+    }
