@@ -2,8 +2,6 @@
 
 OctoPrint plugin that intercepts M150 GCode commands and controls LEDs connected to a custom driver board.
 
-![PCA9685 dev board](https://www.picclickimg.com/d/l400/pict/362541152188_/10PCS-PCA9685-16-Channel-12-bit-PWM-Servo.jpg)
-
 Implements the M150 command syntax from the latest Marlin.
 
         M150: Set Status LED Color - Use R-U-B for R-G-B Optional (W)
