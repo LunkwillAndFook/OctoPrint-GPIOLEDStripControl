@@ -1,2 +1,2 @@
 include README.md
-recursive-include octoprint_PCA9685LEDStripControl *
+recursive-include octoprint_GPIOLEDStripControl *
