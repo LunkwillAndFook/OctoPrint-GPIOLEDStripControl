@@ -24,7 +24,7 @@ plugin_author = "Originally by Ozgun Ayaz, modified by Jeremy Huckeba"
 plugin_author_email = "8645580+LunkwillAndFook@users.noreply.github.com"
 plugin_url = "https://github.com/LunkwillAndFook/OctoPrint-GPIOLEDStripControl"
 plugin_license = "Apache"
-plugin_requires = ["RPi_GPIO"]
+plugin_requires = ["python-rpi.gpio"]
 
 plugin_additional_data = []
 plugin_additional_packages = []
